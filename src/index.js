@@ -2,8 +2,10 @@
 var fs = require('fs');
 var path = require('path');
 var koa = require('koa');
+var proxy = require('koa-proxy');
+var StreamInjecter = require('stream-injecter');
 var CacheStream = require('cache-stream');
-var WebSocketServer = require('ws').Server
+var WebSocketServer = require('ws').Server;
 
 // Middleware
 var middleware = require('./middleware');
@@ -13,6 +15,9 @@ var debug = require('debug')('koa:webpack');
 
 // Path to client files
 var distFilesPath = path.join(__dirname, '../dist');
+
+// Script injection snippet
+var snippet = '\n<script>document.write(\'<script src="/__dev_server__/devserver.js"><\\/script>\')</script>\n';
 
 function Server (compiler, options) {
     this.parseOptions(options);
@@ -36,28 +41,28 @@ function Server (compiler, options) {
 
     // Prepare js
     var jsFile = new CacheStream();
-    fs.createReadStream(path.join(distFilesPath, '/main.js')).pipe(jsFile);
+    fs.createReadStream(path.join(distFilesPath, '/devserver.js')).pipe(jsFile);
 
     // Prepare css
-    var cssFile = new CacheStream();
-    fs.createReadStream(path.join(distFilesPath, '/main.css')).pipe(cssFile);
+    //var cssFile = new CacheStream();
+    //fs.createReadStream(path.join(distFilesPath, '/devserver.css')).pipe(cssFile);
 
     this.app.use(function* (next) {
         var file;
         debug('%s', this.url);
         switch (this.url) {
-            case '/__dev_server__/main.js':
+            case '/__dev_server__/devserver.js':
                 this.set('Content-Type', 'application/javascript');
                 file = jsFile;
             break;
 
-            case '/__dev_server__/main.css':
-                this.set('Content-Type', 'text/css');
-                file = cssFile;
-            break;
+            //case '/__dev_server__/devserver.css':
+            //    this.set('Content-Type', 'text/css');
+            //    file = cssFile;
+            //break;
 
-            case '/':
-            case '/index.html':
+            case '/__dev_server__/':
+            case '/__dev_server__/index.html':
                 this.set('Content-Type', 'text/html');
                 file = htmlFile;
             break;
@@ -71,6 +76,68 @@ function Server (compiler, options) {
     // Let's mount the middleware
     this.app.use(middleware(compiler, options));
 
+    this.app.use(function* (next){
+        yield* next;
+
+        // Don't add snippet if we're in the dev server
+        if (this.path.indexOf('__dev_server__') !== -1) {
+            return;
+        }
+
+        // Don't add snippet if not html
+        if (this.response.type && this.response.type.indexOf('html') < 0) {
+            return;
+        }
+
+        // Don't add snippet if path is excluded
+        if (options.excludes) {
+            var path = this.path;
+            if (options.excludes.some(function (exlude) {
+                    return path.substr(0, exlude.length) === exlude;
+                })) {
+                return;
+            }
+        }
+
+        // Ok, we're clear to add snippet!
+
+        // Buffer
+        if (Buffer.isBuffer(this.body)) {
+            this.body = this.body.toString();
+        }
+
+        // String
+        if (typeof this.body === 'string') {
+            if (this.body.match(/__dev_server__/)) return;
+            this.body = this.body.replace(/<\/body>/, snippet + "<\/body>");
+        }
+
+        // Stream
+        if (this.body && typeof this.body.pipe === 'function') {
+            var injecter = new StreamInjecter({
+                matchRegExp : /(<\/body>)/,
+                inject : snippet,
+                replace : snippet + "$1",
+                ignore : /__dev_server__/
+            });
+            var size = +this.response.header['content-length'];
+            if (size) this.set('Content-Length', size + snippet.length);
+            this.body = this.body.pipe(injecter);
+        }
+    });
+
+    // Proxy any other requests
+
+    var proxyMiddleware = proxy({
+        host: this.contentBase
+    });
+    this.app.use(function* (next) {
+        // Do not route anything related to dev server
+        if (this.path.indexOf('__dev_server__') !== -1) {
+            return;
+        }
+        yield* proxyMiddleware.call(this, next);
+    });
 }
 
 Server.prototype._onCompilerInvalid = function () {

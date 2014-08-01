@@ -1,13 +1,14 @@
 // Styles
-require('normalize.css/normalize.css');
 require('./main.styl');
 
+// Debug output
+var debug = require('debug')('devserver');
+
 var ws = new WebSocket('ws://localhost:8080/');
-var iframe = document.getElementById('loader');
 var options = {};
 
 ws.onconnection = function () {
-
+    debug('Connected!');
 };
 
 ws.onmessage = function (e) {
@@ -22,23 +23,62 @@ ws.onmessage = function (e) {
     switch (type) {
         case 'options':
             options = data;
-            iframe.src = options.contentBase;
         break;
 
         case 'reload':
-            iframe.location.reload();
+            reloadPage();
         break;
 
         case 'webpack:compile':
-            console.log('webpack is compiling')
+            debug('Webpack is compiling bundle');
         break;
 
-        case 'webpack:compile':
-            console.log('bundle is invalid')
+        case 'webpack:invalid':
+            debug('Webpack bundle is invalid');
         break;
 
         case 'webpack:done':
-            console.log('compilation done', data);
+            debug('Webpack have finished compiling bundle', data);
+            checkWebpackStats(data);
         break;
+    }
+}
+
+var reloadThrottled = null;
+function reloadPage() {
+    if (reloadThrottled) { return; }
+    debug('Reloading page...');
+    window.location.reload();
+}
+
+function reloadCss(file) {
+    debug('Reloading CSS: ', file);
+    var links = document.getElementsByTagName('link');
+    for (var i = 0; i < links.length;i++) { 
+        var link = links[i];
+        if (link.rel === 'stylesheet' && link.href.indexOf(file) !== -1) {
+            if (link.href.indexOf('__time__=') !== -1) {
+                link.href = link.href.replace(/__time__\=([0-9])+/, '__time__=' + Date.now());
+            } else {
+                link.href += '?__time__=' + Date.now();
+            }
+        }
+    } 
+}
+
+function checkWebpackStats(stats) {
+    var emitted = [];
+    for (var i = 0, l = stats.assets.length; i < l; i++) {
+        if (stats.assets[i].emitted) {
+            emitted.push(stats.assets[i]);
+            if (stats.assets[i].name.indexOf('.js') !== -1) {
+                // Reload page and break
+                reloadPage();
+                return;
+            } else if (stats.assets[i].name.indexOf('.css') !== -1) {
+                // Hot reload CSS
+                reloadCss(stats.assets[i].name);
+            }
+        }
     }
 }

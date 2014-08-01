@@ -28,12 +28,6 @@ gulp.task('build', function (callback) {
     // modify some webpack config options
     var config = Object.create(webpackConfig);
     config.plugins = config.plugins.concat(
-        new webpack.DefinePlugin({
-            'process.env': {
-                // This has effect on the react lib size
-                NODE_ENV: 'production'
-            }
-        }),
         new webpack.optimize.OccurenceOrderPlugin(),
         new webpack.optimize.DedupePlugin(),
         new webpack.optimize.UglifyJsPlugin()

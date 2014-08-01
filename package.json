@@ -1,6 +1,6 @@
 {
   "name": "koa-webpack-dev-server",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "webpack dev server using koa.js",
   "main": "index.js",
   "scripts": {
@@ -27,9 +27,11 @@
     "cache-stream": "^0.1.0",
     "debug": "^1.0.4",
     "koa": "^0.8.2",
+    "koa-proxy": "^0.1.2",
     "koa-router": "^3.2.3",
     "memory-fs": "^0.1.0",
     "mime": "^1.2.11",
+    "stream-injecter": "0.0.1",
     "ws": "^0.4.31"
   },
   "devDependencies": {
@@ -41,7 +43,6 @@
     "jade": "^1.2.0",
     "jade-loader": "^0.6.1",
     "mocha": "^1.21.3",
-    "normalize.css": "^3.0.1",
     "run-sequence": "^0.3.6",
     "style-loader": "^0.6.4",
     "stylus-loader": "^0.4.0",
