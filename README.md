@@ -1,4 +1,4 @@
-# koa-webpack
+# koa-webpack-dev-server
 
 A webpack development server using koa.js
 
