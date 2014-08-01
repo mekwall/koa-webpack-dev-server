@@ -6,7 +6,18 @@ A webpack development server using koa.js
 
 Does not exist on npm yet. Bare with me!
 
-    $ npm install --save-dev koa-webpack
+    $ npm install koa-webpack-dev-server
+
+## Usage
+
+Coming soon.
+
+## Contributing
+
+Clone the repo and run:
+
+	$ npm install --dev
+	$ gulp
 
 ## License
 
