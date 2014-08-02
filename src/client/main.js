@@ -4,10 +4,12 @@ require('./main.styl');
 // Debug output
 var debug = require('debug')('devserver');
 
+// Create our WebSocket client
+// TODO: port shouldn' be hardcoded
 var ws = new WebSocket('ws://localhost:8080/');
 var options = {};
 
-ws.onconnection = function () {
+ws.onopen = function () {
     debug('Connected!');
 };
 
@@ -57,6 +59,7 @@ function reloadCss(file) {
     for (var i = 0; i < links.length;i++) { 
         var link = links[i];
         if (link.rel === 'stylesheet' && link.href.indexOf(file) !== -1) {
+            // Add a timestamp to the href to force the browser to reload
             if (link.href.indexOf('__time__=') !== -1) {
                 link.href = link.href.replace(/__time__\=([0-9])+/, '__time__=' + Date.now());
             } else {
@@ -69,6 +72,7 @@ function reloadCss(file) {
 function checkWebpackStats(stats) {
     var emitted = [];
     for (var i = 0, l = stats.assets.length; i < l; i++) {
+        // Only handle emitted assets
         if (stats.assets[i].emitted) {
             emitted.push(stats.assets[i]);
             if (stats.assets[i].name.indexOf('.js') !== -1) {
