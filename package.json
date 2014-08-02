@@ -1,6 +1,6 @@
 {
   "name": "koa-webpack-dev-server",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "webpack dev server using koa.js",
   "main": "index.js",
   "scripts": {
