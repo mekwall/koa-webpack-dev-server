@@ -1,23 +1,57 @@
 # koa-webpack-dev-server
 
-A webpack development server using koa.js
+> A stand-alone development server for webpack, based on the awesomeness that is koa.js.
 
-## Installation
+### Features
 
-Does not exist on npm yet. Bare with me!
-
-    $ npm install koa-webpack-dev-server
+* Automatic injection of livereload code
+* Hot reload of CSS files, full page reload for JS
+* Acts as a proxy for your content server
 
 ## Usage
 
-Coming soon.
+### Installation
+
+    $ npm install koa-webpack-dev-server
+
+### Example setup
+
+    // Include necessary deps
+    var webpack = require('webpack');
+    var DevServer = require('koa-webpack-dev-server');
+
+    // Load our webpack config
+    var webpackConfig = require('./webpack.config.js');
+
+    // Modify some webpack config options for development
+    var devConfig = Object.create(webpackConfig);
+    devConfig.devtool = 'sourcemap';
+    devConfig.debug = true;
+
+    // This should point to the server that has the content
+    var contentBase = 'http://localhost:3000/';
+
+    // Create a compiler based on our dev config
+    var compiler = webpack(devConfig);
+
+    // Create a development server instance
+    var devServer = new DevServer(compiler, {
+        contentBase: contentBase
+    });
+
+    // Start listening!
+    devServer.listen(8080, 'localhost', function () {
+        debug('Listening to 8080');
+    });
+
+Go to `http://localhost:8080/' and you should see your site.
 
 ## Contributing
 
 Clone the repo and run:
 
-	$ npm install --dev
-	$ gulp
+    $ npm install
+    $ gulp
 
 ## License
 
