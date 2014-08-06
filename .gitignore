@@ -16,9 +16,6 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 
-# Distribution related files
-dist
-
 # Users Environment Variables
 .lock-wscript
 
