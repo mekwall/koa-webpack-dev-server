@@ -32,7 +32,7 @@
     "memory-fs": "^0.1.0",
     "mime": "^1.2.11",
     "stream-injecter": "0.0.1",
-    "ws": "git+ssh://git@github.com:einaros/ws.git"
+    "ws": "^0.4.32"
   },
   "devDependencies": {
     "css-loader": "^0.7.0",
