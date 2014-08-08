@@ -27,10 +27,10 @@
     "cache-stream": "^0.1.0",
     "debug": "^1.0.4",
     "koa": "^0.8.2",
-    "koa-proxy": "mekwall/koa-proxy",
     "koa-router": "^3.2.3",
     "memory-fs": "^0.1.0",
     "mime": "^1.2.11",
+    "request": "^2.40.0",
     "stream-injecter": "0.0.1",
     "ws": "^0.4.32"
   },
