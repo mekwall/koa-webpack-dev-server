@@ -2,7 +2,7 @@
 var fs = require('fs');
 var path = require('path');
 var koa = require('koa');
-var proxy = require('koa-proxy');
+var request = require('request').defaults({ jar: true });
 var StreamInjecter = require('stream-injecter');
 var CacheStream = require('cache-stream');
 var WebSocketServer = require('ws').Server;
@@ -127,16 +127,19 @@ function Server (compiler, options) {
     });
 
     // Proxy any other requests
-
-    var proxyMiddleware = proxy({
-        host: this.contentBase
-    });
+    var _this = this;
     this.app.use(function* (next) {
         // Do not route anything related to dev server
         if (this.path.indexOf('__dev_server__') !== -1) {
             return;
         }
-        yield* proxyMiddleware.call(this, next);
+        var res = request({
+            method: this.request.method, 
+            url: _this.contentBase + this.request.url.substr(1), 
+            header: this.request.header
+        });
+        this.req.pipe(res);
+        this.body = res;
     });
 }
 
