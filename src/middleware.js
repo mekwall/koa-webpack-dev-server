@@ -27,7 +27,7 @@ module.exports = function (compiler, options) {
                 compiler.watch(200, handleCompile);
             }, 500);
         }
-        if (!options.quiet) {
+        if (!options.quiet && stats) {
             console.log(stats.toString(options.stats));
         }
     });
