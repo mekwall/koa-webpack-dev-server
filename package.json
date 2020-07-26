@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "cache-stream": "^0.1.0",
-    "debug": "^1.0.4",
+    "debug": "^4.1.1",
     "koa": "^0.8.2",
     "koa-router": "^3.2.3",
     "koa-ws": "^0.2.0",
